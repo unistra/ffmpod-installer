@@ -1,0 +1,29 @@
+# bag is the directory where the installer will be installed
+# bag=test
+
+# this key will be created automatically if not exists
+
+key=(
+    public  files/pod.pub
+    private files/pod
+    desc   'ffmpod ssh service key'
+)
+
+# this is the encoding server (the one on which ffmpeg will run) where
+# * ssh is the ssh point to reach to install stuff
+# * authorize is the restriction added to the public key during the installation
+
+encoding_server=(
+    ssh       pod-test@hpc
+    authorize 'restrict,command="process"'
+    service   files/pod.service )
+
+# this is the pod server where
+# * ssh is the ssh point to reach to install stuff
+# * authorize is the restriction added to the public key during the installation
+# * pod is the path to the pod code
+
+pod_server=(
+    ssh       django@example.com
+    authorize 'restrict,command="navigator-wrapper"'
+    pod '~/pod.example.com/current/' )

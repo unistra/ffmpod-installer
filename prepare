@@ -1,0 +1,98 @@
+#! env zsh
+set -e -u
+local -A key pod_server encoding_server
+local -a encoding_bin
+local it=
+
+encoding_bin=(
+    dtrt-ffmpeg-downscale
+    dtrt-ffmpeg-guess-config
+    dtrt-ffmpeg-overview
+    dtrt-ffmpeg-thumbnails
+    dtrt-ffmpeg.zsh
+    ffmpod )
+
+key_generation () {
+    ssh-keygen -t ed25519 -N '' -C $key[desc] -f $key[private] }
+
+prepare_bag_encoding () {
+
+    local it dest=$bag/encoding
+
+    for it ( $dest/bin ) {
+        mkdir -p $it
+        cp dtrt-ffmpeg/bin/$^encoding_bin $it
+    }
+
+    cp $key[private] $dest/pod
+    cp files/install_pod.sh $dest/run
+
+    print $encoding_server[authorize] $(< $key[public] ) >  $dest/pod.pub
+}
+
+
+prepare_bag_pod () {
+    local it dest=$bag/pod
+    local it
+
+    for it ( $dest/bin ) {
+        mkdir -p $it
+        cp dtrt-ffmpeg/bin/navigator-wrapper $it
+    }
+
+    cp $key[private] $dest/pod
+
+    { cat files/install_pod.sh
+        print 'cp podrc ~/.podrc' } > $dest/run
+
+    print pod=$pod_server[pod] > $dest/podrc
+    print $encoding_server[authorize] $(< $key[public] ) >
+        $dest/pod.pub
+}
+
+test_ssh_access () {
+    for it ( encoding_server pod_server )
+        ssh ${${(P)it}[ssh]} :
+}
+
+bagin () { tar hcf - "$@" }
+
+bagx () {
+    echo '
+    set -e
+    cd ${~AIRBORNE_DIR:=$( mktemp -d ${~AIRBORNE_TMPL:=/tmp/airborne.XXXXXXXXXX} )}
+    tar xf - <<\\0db3972a-7ab7-4b4e-a327-db8096e1b726 && '${*:-. ./run}
+    echo 0db3972a-7ab7-4b4e-a327-db8096e1b726
+}
+
+kameameaaa () { bagin -C $1 |bagx }
+
+s () { ssh -oBatchMode=yes "$@" }
+
+. ${1?configuration file, read the documentation to know the parameters}
+: ${bag?a destination directory (known as \$bag) must be configured}
+
+# adding default values
+
+key=(
+    public ${key[private]?key[private] contains the path of the private key}.pub
+    desc   'ffmpod ssh service key'
+    ${(kv)key} )
+
+test -f $key[private] || key_generation
+
+prepare_bag_encoding
+prepare_bag_pod
+
+for it (${=install:-}) {
+    case $it {
+        (pod)
+            kameameaaa $bag/pod |
+                s $pod_server[ssh] sh
+        ;;
+        (encoding)
+            kameameaaa $bag/encoding |
+                s $encoding_server[ssh] sh
+        ;;
+    }
+}

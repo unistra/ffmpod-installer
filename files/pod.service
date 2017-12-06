@@ -1,0 +1,6 @@
+
+host pod
+hostname pod.example.com
+user django
+IdentityFile ~/.ssh/pod
+
