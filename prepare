@@ -46,8 +46,7 @@ prepare_bag_pod () {
         print 'cp podrc ~/.podrc' } > $dest/run
 
     print pod=$pod_server[pod] > $dest/podrc
-    print $encoding_server[authorize] $(< $key[public] ) >
-        $dest/pod.pub
+    print $encoding_server[authorize] $(< $key[public] ) > $dest/pod.pub
 }
 
 test_ssh_access () {
