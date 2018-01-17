@@ -5,6 +5,7 @@ local -a encoding_bin
 local it=
 
 encoding_bin=(
+    process
     dtrt-ffmpeg-downscale
     dtrt-ffmpeg-guess-config
     dtrt-ffmpeg-overview
@@ -33,7 +34,6 @@ prepare_bag_encoding () {
 
 prepare_bag_pod () {
     local it dest=$bag/pod
-    local it
 
     for it ( $dest/bin ) {
         mkdir -p $it
@@ -58,7 +58,7 @@ bagin () { tar hcf - "$@" }
 
 bagx () {
     echo '
-    set -e
+    set -e -x
     cd ${~AIRBORNE_DIR:=$( mktemp -d ${~AIRBORNE_TMPL:=/tmp/airborne.XXXXXXXXXX} )}
     tar xf - <<\\0db3972a-7ab7-4b4e-a327-db8096e1b726 && '${*:-. ./run}
     cat
@@ -86,7 +86,7 @@ prepare_bag_pod
 
 for it (${=install:-}) {
     case $it {
-        (pod)      kameameaaa $bag/pod      . | s $pod_server[ssh] sh ;;
-        (encoding) kameameaaa $bag/encoding . | s $encoding_server[ssh] sh ;;
+        (pod)      kameameaaa $bag/pod      . | s $pod_server[ssh] zsh ;;
+        (encoding) kameameaaa $bag/encoding . | s $encoding_server[ssh] zsh ;;
     }
 }
