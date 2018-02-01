@@ -32,7 +32,14 @@ prepare_bag_encoding () {
     }
 
     cp $key[private] $dest/pod
-    cp files/install_pod.sh $dest/run
+    cp files/zshenv  $dest
+    cp $encoding_server[service] $dest/pod.service
+
+    { cat files/install_pod.sh
+        print -l \
+	'cp zshenv ~/.zshenv'
+    } > $dest/run
+
 
     # build a new public key with authorized command in it
 
@@ -49,14 +56,17 @@ prepare_bag_pod () {
     }
 
     cp $key[private] $dest/pod
+    cp $pod_server[service] $dest/pod.service
 
     { cat files/install_pod.sh
-        print 'cp podrc ~/.podrc' } > $dest/run
+        print -l \
+	'cp podrc  ~/.podrc'
+    } > $dest/run
 
     print pod=$pod_server[pod] > $dest/podrc
 
     # build a new public key with authorized command in it
-    print $encoding_server[authorize] $(< $key[public] ) > $dest/pod.pub
+    print $pod_server[authorize] $(< $key[public] ) > $dest/pod.pub
 }
 
 test_ssh_access () {
@@ -115,6 +125,9 @@ test -f $key[private] ||
 
 prepare_bag_encoding
 prepare_bag_pod
+
+# tu le sens le truc de porc ?
+# for it ( $bag/{pod,encoding} ) cp files/pod.service $it
 
 # kameameaaa for each servers declared in $install (separated by space)
 # examples:
