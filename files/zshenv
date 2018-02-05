@@ -1,0 +1,4 @@
+path+=~/bin
+. /usr/local/Modules/latest/init/zsh
+module load encoding/ffmpeg
+setopt extendedglob
